@@ -33,6 +33,24 @@
             padding: 15px;
             overflow-x: hidden;
             color: var(--text-dark);
+            position: relative;
+            transition: color 0.6s ease;
+        }
+
+        /* Calque de fond Spicy (dégradé rouge et noir fluide) */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0d0205 0%, #5c0a18 45%, #b8142c 80%, #140307 100%);
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+            transition: opacity 0.9s ease;
+        }
+
+        body.spicy-mode::before {
+            opacity: 1;
         }
 
         /* Conteneur Principal */
@@ -47,7 +65,15 @@
             text-align: center;
             position: relative;
             z-index: 10;
-            transition: all 0.4s ease;
+            transition: background 0.7s ease, box-shadow 0.7s ease, border 0.7s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        body.spicy-mode .container {
+            background: rgba(24, 12, 16, 0.90);
+            box-shadow: 0 25px 55px rgba(220, 20, 60, 0.45);
+            border: 1px solid rgba(255, 75, 110, 0.35);
+            color: #f5f6fa;
         }
 
         /* Piste des deux personnages */
@@ -57,6 +83,11 @@
             background: rgba(255, 75, 110, 0.08);
             border-radius: 20px;
             position: relative;
+            transition: background 0.7s ease;
+        }
+
+        body.spicy-mode .track-wrapper {
+            background: rgba(255, 45, 85, 0.16);
         }
 
         .track-line {
@@ -65,6 +96,11 @@
             border-radius: 10px;
             position: relative;
             margin: 25px 25px 10px;
+            transition: background 0.7s ease;
+        }
+
+        body.spicy-mode .track-line {
+            background: rgba(255, 255, 255, 0.18);
         }
 
         .track-fill {
@@ -113,6 +149,11 @@
             font-weight: 600;
             color: var(--primary);
             margin-top: 5px;
+            transition: color 0.7s ease;
+        }
+
+        body.spicy-mode .progress-text {
+            color: #ff7675;
         }
 
         /* Écrans */
@@ -175,11 +216,13 @@
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            transition: all 0.5s ease;
         }
 
         .question-badge.spicy {
-            background: #2d3436;
-            color: #ff7675;
+            background: linear-gradient(90deg, #8b0000, #d63031);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(214, 48, 49, 0.45);
         }
 
         .question-text {
@@ -191,6 +234,11 @@
             justify-content: center;
             margin-bottom: 20px;
             line-height: 1.4;
+            transition: color 0.7s ease;
+        }
+
+        body.spicy-mode .question-text {
+            color: #ffffff;
         }
 
         .choices {
@@ -260,29 +308,124 @@
             color: var(--secondary);
             font-style: italic;
             padding: 4px 8px;
-            transition: opacity 0.25s ease;
+            transition: color 0.7s ease;
         }
 
-        /* Écran Final */
+        body.spicy-mode .reaction-box {
+            color: #ff9ff3;
+        }
+
+        /* Écran Final & Animation Bisou */
+        .final-kiss-stage {
+            min-height: 95px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
         .final-explosion-icon {
-            font-size: 4rem;
-            margin-bottom: 10px;
-            animation: pulseHeart 1.2s infinite;
+            font-size: 4.4rem;
+            display: inline-block;
+            animation: kissEntrance 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, pulseHeart 1.3s 0.9s infinite;
+        }
+
+        @keyframes kissEntrance {
+            0% { opacity: 0; transform: scale(0.2) rotate(-15deg); }
+            70% { opacity: 1; transform: scale(1.25) rotate(6deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
 
         @keyframes pulseHeart {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.18); }
+        }
+
+        /* Défilement intelligent de petites photos (Ruban Polaroid continu) */
+        .photo-showcase {
+            display: none;
+            margin: 14px 0 18px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 18px;
+            padding: 12px 0;
+            background: linear-gradient(135deg, rgba(255, 75, 110, 0.08), rgba(108, 92, 231, 0.08));
+            border: 1px solid rgba(255, 75, 110, 0.22);
+            opacity: 0;
+            transform: translateY(12px) scale(0.96);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+
+        .photo-showcase.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .photo-marquee-track {
+            display: flex;
+            gap: 12px;
+            width: max-content;
+            animation: smartScroll var(--scroll-duration, 24s) linear infinite;
+            padding-left: 12px;
+        }
+
+        .photo-showcase:hover .photo-marquee-track,
+        .photo-showcase:active .photo-marquee-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes smartScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .mini-photo-card {
+            width: 108px;
+            height: 132px;
+            background: #ffffff;
+            padding: 5px 5px 18px 5px;
+            border-radius: 10px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+            flex-shrink: 0;
+            transform: rotate(var(--tilt, 0deg));
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .mini-photo-card:hover {
+            transform: scale(1.08) rotate(0deg);
+            z-index: 5;
+        }
+
+        .mini-photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .mini-photo-card::after {
+            content: "❤️";
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            opacity: 0.75;
         }
 
         .final-message {
             background: #fff0f3;
             border: 2px dashed #ffb3c1;
             border-radius: 20px;
-            padding: 20px;
-            margin: 18px 0;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            padding: 18px;
+            margin: 14px 0;
+            font-size: 0.92rem;
+            line-height: 1.55;
             color: var(--text-dark);
         }
 
@@ -292,10 +435,11 @@
             background: white;
             padding: 12px;
             border-radius: 15px;
-            margin-top: 15px;
+            margin-top: 12px;
             font-size: 0.85rem;
             font-weight: 700;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            color: var(--text-dark);
         }
 
         /* Particules Explosion d'Emojis (Fin) */
@@ -387,7 +531,16 @@
 
         <!-- ÉCRAN 3 : FINAL -->
         <div class="screen" id="screen-end">
-            <div class="final-explosion-icon">👩‍❤️‍👨</div>
+            <!-- Étape 1 : L'emoji du bisou à deux pendant quelques secondes -->
+            <div class="final-kiss-stage" id="finalKissStage">
+                <div class="final-explosion-icon">💏</div>
+            </div>
+
+            <!-- Étape 2 : Défilement intelligent des petites photos du répertoire -->
+            <div class="photo-showcase" id="photoShowcase">
+                <div class="photo-marquee-track" id="photoTrack"></div>
+            </div>
+
             <h1>On s'est retrouvés ! 💖</h1>
             
             <div class="final-message">
@@ -401,7 +554,7 @@
                 <span id="stat-her">Manon : 0</span>
             </div>
 
-            <button class="start-btn" style="margin-top: 20px; padding: 12px 24px; font-size: 0.9rem;" onclick="triggerEmojiExplosion()">Relancer les confettis 🎉</button>
+            <button class="start-btn" style="margin-top: 18px; padding: 12px 24px; font-size: 0.9rem;" onclick="triggerEmojiExplosion()">Relancer les confettis 🎉</button>
         </div>
     </div>
 
@@ -413,8 +566,26 @@
             nomLui: "Tim",      // Côté garçon
             nomElle: "Manon",   // Côté fille
             
-            // Durée d'affichage du commentaire sous les boutons (en millisecondes : 2200 = 2,2 secondes)
-            delaiCommentaire: 2200
+            // Durée d'affichage du commentaire sous les boutons (2200 = 2,2 secondes)
+            delaiCommentaire: 2200,
+
+            // Durée pendant laquelle l'emoji du bisou à deux reste seul avant le défilement photo (3000 = 3 secondes)
+            delaiAvantPhotos: 3000,
+
+            // Noms des photos placées dans le même dossier que ce fichier HTML
+            // (Tu peux en mettre autant que tu veux : photo1.jpg, photo2.jpg, etc. Les photos manquantes sont ignorées automatiquement)
+            photos: [
+                "photo1.jpg",
+                "photo2.jpg",
+                "photo3.jpg",
+                "photo4.jpg",
+                "photo5.jpg",
+                "photo6.jpg",
+                "photo7.jpg",
+                "photo8.jpg",
+                "photo9.jpg",
+                "photo10.jpg"
+            ]
         };
 
         /* =========================================================
@@ -422,7 +593,7 @@
            ========================================================= */
         const QUESTIONS = [
             // --- PARTIE 1 : LE QUOTIDIEN & COMPLICITÉ ---
-            { q: "Qui de nous deux met le plus de temps à se préparer avant de sortir ?", r: "La vérité finit toujours par sortir... 👀" },
+            { q: "Qui de nous deux met le plus de temps à se préparer avant de sortir ?", r: "Avouez, on sait déjà qui c'est... 👀" },
             { q: "Qui de nous deux s'endort en premier devant un film ?", r: "« Mais non je dors pas, j'écoute ! » 😴" },
             { q: "Qui de nous deux est le plus gourmand ?", r: "Impossible de résister à un bon dessert 🍫" },
             { q: "Qui de nous deux a fait le premier pas ?", r: "Et quelle excellente décision ! ✨" },
@@ -485,12 +656,13 @@
         ];
 
         /* =========================================================
-           3. LOGIQUE DU JEU & ANIMATIONS
+           3. LOGIQUE DU JEU, THÈME SPICY & DÉFILEMENT PHOTO
            ========================================================= */
         let currentIdx = 0;
         let scoreHim = 0;
         let scoreHer = 0;
         let isTransitioning = false;
+        let validPhotos = [];
 
         const charLeft = document.getElementById('char-left');
         const charRight = document.getElementById('char-right');
@@ -500,6 +672,20 @@
         // Initialisation des prénoms ("Tim" / "Manon")
         document.getElementById('name-him').textContent = CONFIG.nomLui;
         document.getElementById('name-her').textContent = CONFIG.nomElle;
+
+        // Pré-vérification intelligente des photos présentes dans le répertoire
+        function preloadValidPhotos() {
+            CONFIG.photos.forEach(src => {
+                const img = new Image();
+                img.onload = () => {
+                    if (!validPhotos.includes(src)) {
+                        validPhotos.push(src);
+                    }
+                };
+                img.src = src;
+            });
+        }
+        preloadValidPhotos();
 
         function startQuiz() {
             document.getElementById('screen-start').classList.remove('active');
@@ -514,9 +700,11 @@
             if (qData.spicy) {
                 badge.textContent = `🔥 Question ${currentIdx + 1} / ${QUESTIONS.length} • Spicy`;
                 badge.classList.add('spicy');
+                document.body.classList.add('spicy-mode');
             } else {
                 badge.textContent = `Question ${currentIdx + 1} / ${QUESTIONS.length}`;
                 badge.classList.remove('spicy');
+                document.body.classList.remove('spicy-mode');
             }
 
             document.getElementById('q-text').textContent = qData.q;
@@ -532,7 +720,7 @@
             
             // Animation de rebond sur le bouton cliqué
             btn.classList.remove('pop-him', 'pop-her');
-            void btn.offsetWidth; // Force le redémarrage de l'animation CSS
+            void btn.offsetWidth;
             btn.classList.add(who === 'him' ? 'pop-him' : 'pop-her');
 
             // Mini explosion d'emojis aux couleurs du bouton cliqué
@@ -560,7 +748,6 @@
             const originX = rect.left + rect.width / 2;
             const originY = rect.top + rect.height / 2;
 
-            // Palette violet/bleu pour Tim (gars) et rose/rouge pour Manon (fille)
             const emojisHim = ['💜', '💙', '🔮', '✨', '⚡', '💎', '🦋'];
             const emojisHer = ['💖', '💗', '❤️', '🌸', '✨', '💕', '🌹'];
             const palette = who === 'him' ? emojisHim : emojisHer;
@@ -613,7 +800,47 @@
             }
         }
 
+        function buildSmartPhotoCarousel() {
+            const showcase = document.getElementById('photoShowcase');
+            const track = document.getElementById('photoTrack');
+
+            // Utilise les photos valides trouvées dans le dossier (ou la liste configurée)
+            const list = validPhotos.length > 0 ? validPhotos : CONFIG.photos;
+            if (!list || list.length === 0) return;
+
+            track.innerHTML = "";
+            const tilts = [-3.5, 2.5, -2, 3.5, -1.5, 2];
+
+            // On duplique la liste 2 fois pour un défilement infini fluide sans coupure
+            const loopList = [...list, ...list];
+            loopList.forEach((src, index) => {
+                const card = document.createElement('div');
+                card.className = 'mini-photo-card';
+                card.style.setProperty('--tilt', `${tilts[index % tilts.length]}deg`);
+
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = "Notre souvenir";
+                img.onerror = () => {
+                    card.remove();
+                };
+
+                card.appendChild(img);
+                track.appendChild(card);
+            });
+
+            // Adapte automatiquement la vitesse du défilement au nombre de photos
+            const duration = Math.max(14, list.length * 3.5);
+            track.style.setProperty('--scroll-duration', `${duration}s`);
+
+            showcase.style.display = 'block';
+            requestAnimationFrame(() => {
+                showcase.classList.add('visible');
+            });
+        }
+
         function finishQuiz() {
+            document.body.classList.remove('spicy-mode');
             document.getElementById('screen-quiz').classList.remove('active');
             document.getElementById('screen-end').classList.add('active');
 
@@ -623,6 +850,11 @@
             triggerEmojiExplosion();
             setTimeout(triggerEmojiExplosion, 600);
             setTimeout(triggerEmojiExplosion, 1200);
+
+            // L'emoji du bisou à deux (💏) apparaît seul pendant 3 secondes, puis le défilement photo démarre
+            setTimeout(() => {
+                buildSmartPhotoCarousel();
+            }, CONFIG.delaiAvantPhotos);
         }
 
         function triggerEmojiExplosion() {
