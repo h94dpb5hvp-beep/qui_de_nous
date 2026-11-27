@@ -35,43 +35,6 @@
             color: var(--text-dark);
         }
 
-        /* Lecteur Audio Flottant */
-        .music-bar {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 8px 14px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            z-index: 100;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .music-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            transition: transform 0.2s;
-        }
-
-        .music-btn:active {
-            transform: scale(0.9);
-        }
-
         /* Conteneur Principal */
         .container {
             width: 100%;
@@ -244,13 +207,14 @@
             font-size: 1.05rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 6px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         .choice-btn.him {
@@ -263,6 +227,27 @@
 
         .choice-btn:active {
             transform: scale(0.95);
+        }
+
+        /* Animation de rebond et halo lors du clic sur Tim ou Manon */
+        @keyframes btnPopHim {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.75); }
+            45% { transform: scale(1.09); box-shadow: 0 0 0 16px rgba(108, 92, 231, 0); }
+            100% { transform: scale(1); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        }
+
+        @keyframes btnPopHer {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 75, 110, 0.75); }
+            45% { transform: scale(1.09); box-shadow: 0 0 0 16px rgba(255, 75, 110, 0); }
+            100% { transform: scale(1); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        }
+
+        .pop-him {
+            animation: btnPopHim 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .pop-her {
+            animation: btnPopHer 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .reaction-box {
@@ -313,7 +298,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* Particules Explosion d'Emojis */
+        /* Particules Explosion d'Emojis (Fin) */
         .emoji-particle {
             position: fixed;
             pointer-events: none;
@@ -335,16 +320,32 @@
                 transform: translate(var(--tx), var(--ty)) scale(1.4) rotate(var(--rot));
             }
         }
+
+        /* Mini explosion d'emojis au clic sur une case */
+        .click-emoji-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            font-size: 1.35rem;
+            animation: clickBurst 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes clickBurst {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+            }
+            65% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(1.25) rotate(var(--rot));
+            }
+        }
     </style>
 </head>
 <body>
-
-    <!-- Barre Musique -->
-    <div class="music-bar" id="musicBar" style="display: none;">
-        <span id="track-name">Musique 1/4</span>
-        <button class="music-btn" id="playPauseBtn" onclick="togglePlay()">⏸️</button>
-        <button class="music-btn" onclick="nextTrack()">⏭️</button>
-    </div>
 
     <div class="container">
         <!-- Piste de rapprochement des personnages -->
@@ -361,7 +362,7 @@
         <!-- ÉCRAN 1 : ACCUEIL -->
         <div class="screen active" id="screen-start">
             <h1>Case n°5 : Qui de nous deux ?</h1>
-            <p class="subtitle">56 questions sur nous (dont quelques questions un peu spicy 🔥). À chaque réponse, on se rapproche l'un de l'autre... Active le son et lance le jeu ! 🎶</p>
+            <p class="subtitle">56 questions sur nous (dont quelques questions un peu spicy 🔥). À chaque réponse, on se rapproche un peu plus l'un de l'autre jusqu'aux retrouvailles ! ❤️</p>
             <button class="start-btn" onclick="startQuiz()">C'est parti ! ❤️</button>
         </div>
 
@@ -371,13 +372,13 @@
             <div class="question-text" id="q-text">Qui de nous deux...</div>
             
             <div class="choices">
-                <button class="choice-btn him" onclick="answer('him')">
+                <button class="choice-btn him" id="btn-him" onclick="answer('him', event)">
                     <span style="font-size: 1.6rem;">👦🏻</span>
-                    <span id="name-him">Lui</span>
+                    <span id="name-him">Tim</span>
                 </button>
-                <button class="choice-btn her" onclick="answer('her')">
+                <button class="choice-btn her" id="btn-her" onclick="answer('her', event)">
                     <span style="font-size: 1.6rem;">👧🏻</span>
-                    <span id="name-her">Elle</span>
+                    <span id="name-her">Manon</span>
                 </button>
             </div>
 
@@ -395,35 +396,25 @@
             </div>
 
             <div class="stats-summary">
-                <span id="stat-him">Lui : 0</span>
+                <span id="stat-him">Tim : 0</span>
                 <span>❤️</span>
-                <span id="stat-her">Elle : 0</span>
+                <span id="stat-her">Manon : 0</span>
             </div>
 
             <button class="start-btn" style="margin-top: 20px; padding: 12px 24px; font-size: 0.9rem;" onclick="triggerEmojiExplosion()">Relancer les confettis 🎉</button>
         </div>
     </div>
 
-    <!-- Lecteur Audio Caché -->
-    <audio id="bg-audio" preload="auto"></audio>
-
     <script>
         /* =========================================================
            1. CONFIGURATION À PERSONNALISER
            ========================================================= */
         const CONFIG = {
-            nomLui: "Lui",      // Côté garçon
-            nomElle: "Elle",    // Côté fille
+            nomLui: "Tim",      // Côté garçon
+            nomElle: "Manon",   // Côté fille
             
             // Durée d'affichage du commentaire sous les boutons (en millisecondes : 2200 = 2,2 secondes)
-            delaiCommentaire: 2200,
-            
-            playlist: [
-                { title: "Notre musique 1", src: "musique1.mp3" },
-                { title: "Notre musique 2", src: "musique2.mp3" },
-                { title: "Notre musique 3", src: "musique3.mp3" },
-                { title: "Notre musique 4", src: "musique4.mp3" }
-            ]
+            delaiCommentaire: 2200
         };
 
         /* =========================================================
@@ -448,7 +439,7 @@
             { q: "Qui de nous deux est le meilleur cuisinier ?", r: "Chef étoilé de la maison 👨‍🍳" },
             { q: "Qui de nous deux est le plus stressé quand on doit prendre la route ou un train ?", r: "Mieux vaut arriver 2h en avance ! ⏰" },
             { q: "Qui de nous deux fait le plus de câlins ?", r: "La meilleure recharge d'énergie 🤗" },
-            { q: "Qui de nous deux a les meilleurs goûts musicaux ?", r: "La playlist actuelle prouve que vous avez bon goût 🎶" },
+            { q: "Qui de nous deux a les meilleurs goûts dans nos sorties et soirées ?", r: "Toujours les meilleures idées 🎯" },
             { q: "Qui de nous deux pleure le plus facilement devant un film émouvant ?", r: "« J'ai juste une poussière dans l'œil... » 😢" },
             { q: "Qui de nous deux est le plus maladroit ?", r: "Attention aux objets fragiles autour ! 💥" },
             { q: "Qui de nous deux planifie le mieux les sorties et les voyages ?", r: "L'organisation, c'est la clé 🗺️" },
@@ -494,71 +485,23 @@
         ];
 
         /* =========================================================
-           3. LOGIQUE DU JEU, AUDIO & ANIMATIONS
+           3. LOGIQUE DU JEU & ANIMATIONS
            ========================================================= */
         let currentIdx = 0;
         let scoreHim = 0;
         let scoreHer = 0;
-        let currentTrackIdx = 0;
-        let isPlaying = false;
         let isTransitioning = false;
 
-        const audio = document.getElementById('bg-audio');
         const charLeft = document.getElementById('char-left');
         const charRight = document.getElementById('char-right');
         const trackFill = document.getElementById('trackFill');
         const progressText = document.getElementById('progressText');
 
-        // Initialisation des labels boutons ("Lui" / "Elle")
+        // Initialisation des prénoms ("Tim" / "Manon")
         document.getElementById('name-him').textContent = CONFIG.nomLui;
         document.getElementById('name-her').textContent = CONFIG.nomElle;
 
-        // Gestion de la Playlist
-        function loadTrack(index) {
-            currentTrackIdx = index % CONFIG.playlist.length;
-            audio.src = CONFIG.playlist[currentTrackIdx].src;
-            document.getElementById('track-name').textContent = `🎵 ${currentTrackIdx + 1}/${CONFIG.playlist.length}`;
-        }
-
-        function startMusic() {
-            document.getElementById('musicBar').style.display = 'flex';
-            loadTrack(0);
-            audio.volume = 0.5;
-            audio.play().then(() => {
-                isPlaying = true;
-                document.getElementById('playPauseBtn').textContent = '⏸️';
-            }).catch(err => {
-                console.log("Lecture audio en attente d'interaction ou fichier manquant :", err);
-                isPlaying = false;
-                document.getElementById('playPauseBtn').textContent = '▶️';
-            });
-        }
-
-        function togglePlay() {
-            if (isPlaying) {
-                audio.pause();
-                isPlaying = false;
-                document.getElementById('playPauseBtn').textContent = '▶️';
-            } else {
-                audio.play();
-                isPlaying = true;
-                document.getElementById('playPauseBtn').textContent = '⏸️';
-            }
-        }
-
-        function nextTrack() {
-            loadTrack(currentTrackIdx + 1);
-            audio.play();
-            isPlaying = true;
-            document.getElementById('playPauseBtn').textContent = '⏸️';
-        }
-
-        audio.addEventListener('ended', () => {
-            nextTrack();
-        });
-
         function startQuiz() {
-            startMusic();
             document.getElementById('screen-start').classList.remove('active');
             document.getElementById('screen-quiz').classList.add('active');
             showQuestion();
@@ -581,9 +524,19 @@
             isTransitioning = false;
         }
 
-        function answer(who) {
+        function answer(who, event) {
             if (isTransitioning) return;
             isTransitioning = true;
+
+            const btn = who === 'him' ? document.getElementById('btn-him') : document.getElementById('btn-her');
+            
+            // Animation de rebond sur le bouton cliqué
+            btn.classList.remove('pop-him', 'pop-her');
+            void btn.offsetWidth; // Force le redémarrage de l'animation CSS
+            btn.classList.add(who === 'him' ? 'pop-him' : 'pop-her');
+
+            // Mini explosion d'emojis aux couleurs du bouton cliqué
+            triggerClickBurst(btn, who);
 
             if (who === 'him') scoreHim++;
             else scoreHer++;
@@ -600,6 +553,43 @@
                     finishQuiz();
                 }
             }, CONFIG.delaiCommentaire);
+        }
+
+        function triggerClickBurst(btnElement, who) {
+            const rect = btnElement.getBoundingClientRect();
+            const originX = rect.left + rect.width / 2;
+            const originY = rect.top + rect.height / 2;
+
+            // Palette violet/bleu pour Tim (gars) et rose/rouge pour Manon (fille)
+            const emojisHim = ['💜', '💙', '🔮', '✨', '⚡', '💎', '🦋'];
+            const emojisHer = ['💖', '💗', '❤️', '🌸', '✨', '💕', '🌹'];
+            const palette = who === 'him' ? emojisHim : emojisHer;
+
+            const count = 18;
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'click-emoji-particle';
+                el.textContent = palette[Math.floor(Math.random() * palette.length)];
+
+                el.style.left = `${originX}px`;
+                el.style.top = `${originY}px`;
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 55 + Math.random() * 115;
+                const tx = Math.cos(angle) * distance + 'px';
+                const ty = Math.sin(angle) * distance + 'px';
+                const rot = (Math.random() - 0.5) * 480 + 'deg';
+
+                el.style.setProperty('--tx', tx);
+                el.style.setProperty('--ty', ty);
+                el.style.setProperty('--rot', rot);
+
+                document.body.appendChild(el);
+
+                setTimeout(() => {
+                    el.remove();
+                }, 950);
+            }
         }
 
         function updateCharactersPosition() {
